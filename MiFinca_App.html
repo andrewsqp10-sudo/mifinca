@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Mi Finca</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --verde:    #2E7D32;
+    --verde2:   #43A047;
+    --verde-claro: #E8F5E9;
+    --tierra:   #5D4037;
+    --dorado:   #F9A825;
+    --blanco:   #FAFAF8;
+    --gris:     #757575;
+    --sombra:   0 4px 24px rgba(0,0,0,.13);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: #F1F4EE;
+    min-height: 100vh;
+    color: #222;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, var(--verde) 0%, #1B5E20 100%);
+    color: #fff;
+    padding: 20px 20px 16px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.25);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { font-size: 2.2rem; line-height: 1; }
+  header h1 { font-family: 'Playfair Display', serif; font-size: 1.45rem; letter-spacing: .5px; }
+  header p  { font-size: .8rem; opacity: .75; margin-top: 2px; }
+
+  /* ── STATUS BAR ── */
+  #status-bar {
+    background: var(--dorado);
+    color: #5D4037;
+    font-size: .82rem; font-weight: 600;
+    text-align: center;
+    padding: 7px 16px;
+    display: none;
+    animation: slideDown .3s ease;
+  }
+  @keyframes slideDown { from{transform:translateY(-100%)} to{transform:translateY(0)} }
+
+  /* ── TABS ── */
+  nav {
+    display: flex;
+    background: #fff;
+    border-bottom: 3px solid var(--verde-claro);
+    overflow-x: auto;
+  }
+  nav button {
+    flex: 1; min-width: 80px;
+    padding: 14px 8px;
+    background: none; border: none; cursor: pointer;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: .88rem; font-weight: 600;
+    color: var(--gris);
+    border-bottom: 3px solid transparent;
+    margin-bottom: -3px;
+    transition: color .2s, border-color .2s;
+  }
+  nav button.active { color: var(--verde); border-bottom-color: var(--verde); }
+  nav button span { display: block; font-size: 1.3rem; margin-bottom: 3px; }
+
+  /* ── MAIN ── */
+  main { padding: 20px 16px 40px; max-width: 540px; margin: 0 auto; }
+  .tab-content { display: none; animation: fadeIn .25s ease; }
+  .tab-content.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── CARDS ── */
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 22px 18px;
+    box-shadow: var(--sombra);
+    margin-bottom: 18px;
+  }
+  .card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: var(--verde);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* ── FORM ── */
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: .82rem; font-weight: 600;
+    color: var(--tierra);
+    margin-bottom: 5px;
+    text-transform: uppercase; letter-spacing: .5px;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid #D7DDD0;
+    border-radius: 10px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: .97rem;
+    background: var(--blanco);
+    transition: border-color .2s, box-shadow .2s;
+    appearance: none;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    outline: none;
+    border-color: var(--verde2);
+    box-shadow: 0 0 0 3px rgba(67,160,71,.15);
+  }
+  .field textarea { resize: vertical; min-height: 72px; }
+  .field .hint { font-size: .76rem; color: var(--gris); margin-top: 4px; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border: none; border-radius: 12px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 1rem; font-weight: 700;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s, opacity .15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--verde); color: #fff; box-shadow: 0 4px 14px rgba(46,125,50,.35); }
+  .btn-primary:hover { box-shadow: 0 6px 20px rgba(46,125,50,.45); }
+  .btn-secondary { background: #fff; color: var(--verde); border: 2px solid var(--verde); }
+  .btn:disabled { opacity: .55; cursor: not-allowed; }
+
+  /* ── STATS ── */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+  .stat-card {
+    background: var(--verde);
+    color: #fff;
+    border-radius: 12px;
+    padding: 16px 14px;
+    text-align: center;
+  }
+  .stat-card.blue  { background: #1565C0; }
+  .stat-card.gold  { background: var(--tierra); }
+  .stat-card.teal  { background: #00695C; }
+  .stat-card .num  { font-family: 'Playfair Display', serif; font-size: 2rem; line-height: 1; }
+  .stat-card .lbl  { font-size: .78rem; opacity: .85; margin-top: 4px; }
+
+  /* ── LIST ── */
+  .list-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 0;
+    border-bottom: 1px solid #EEF1EB;
+  }
+  .list-item:last-child { border-bottom: none; }
+  .list-icon {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: var(--verde-claro);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; flex-shrink: 0;
+  }
+  .list-info { flex: 1; min-width: 0; }
+  .list-info strong { font-weight: 700; font-size: .95rem; display: block;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .list-info span   { font-size: .8rem; color: var(--gris); }
+  .list-badge {
+    font-size: .72rem; font-weight: 700;
+    padding: 3px 9px; border-radius: 20px;
+    background: var(--verde-claro); color: var(--verde);
+    white-space: nowrap;
+  }
+  .list-badge.evt { background: #E3F2FD; color: #1565C0; }
+
+  .empty { text-align: center; padding: 30px 0; color: var(--gris); font-size: .9rem; }
+  .empty span { font-size: 2.5rem; display: block; margin-bottom: 8px; }
+
+  /* ── CONFIG SECTION ── */
+  .config-step {
+    counter-increment: step;
+    display: flex; gap: 14px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+  }
+  .step-num {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--verde); color: #fff;
+    font-weight: 700; font-size: .85rem;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 2px;
+  }
+  .step-body h3 { font-size: .95rem; font-weight: 700; margin-bottom: 4px; }
+  .step-body p  { font-size: .85rem; color: #444; line-height: 1.5; }
+  code {
+    background: #F1F4EE; border: 1px solid #D7DDD0;
+    border-radius: 6px; padding: 2px 7px;
+    font-size: .82rem; font-family: monospace; word-break: break-all;
+  }
+  .code-block {
+    background: #1B2A1C; color: #A5D6A7;
+    border-radius: 10px; padding: 14px;
+    font-family: monospace; font-size: .8rem;
+    line-height: 1.7; overflow-x: auto;
+    margin-top: 8px; margin-bottom: 4px;
+    white-space: pre;
+  }
+  .copy-btn {
+    background: var(--verde-claro); border: none;
+    color: var(--verde); font-weight: 700; font-size: .8rem;
+    padding: 6px 14px; border-radius: 8px; cursor: pointer;
+    margin-top: 6px;
+  }
+
+  .alert {
+    background: #FFF8E1; border-left: 4px solid var(--dorado);
+    border-radius: 8px; padding: 12px 14px;
+    font-size: .85rem; line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  .alert strong { color: var(--tierra); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🐄</div>
+  <div>
+    <h1>Mi Finca</h1>
+    <p id="sync-info">Configura tu URL de Google Sheets abajo</p>
+  </div>
+</header>
+
+<div id="status-bar"></div>
+
+<nav>
+  <button class="active" onclick="showTab('dashboard')"><span>📊</span>Resumen</button>
+  <button onclick="showTab('animales')"><span>🐄</span>Animales</button>
+  <button onclick="showTab('eventos')"><span>💉</span>Eventos</button>
+  <button onclick="showTab('config')"><span>⚙️</span>Configurar</button>
+</nav>
+
+<main>
+
+  <!-- ═══ DASHBOARD ═══ -->
+  <div class="tab-content active" id="tab-dashboard">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="num" id="st-total">–</div><div class="lbl">Total Animales</div></div>
+      <div class="stat-card blue"><div class="num" id="st-eventos">–</div><div class="lbl">Eventos</div></div>
+      <div class="stat-card gold"><div class="num" id="st-vacas">–</div><div class="lbl">Vacas</div></div>
+      <div class="stat-card teal"><div class="num" id="st-terneros">–</div><div class="lbl">Terneros</div></div>
+    </div>
+
+    <div class="card">
+      <h2>⏱ Últimos registros</h2>
+      <div id="recientes"><div class="empty"><span>🌿</span>Sin datos aún</div></div>
+    </div>
+
+    <button class="btn btn-secondary" onclick="cargarDatos()">🔄 Actualizar datos</button>
+  </div>
+
+  <!-- ═══ ANIMALES ═══ -->
+  <div class="tab-content" id="tab-animales">
+    <div class="card">
+      <h2>🐄 Registrar Animal</h2>
+      <div class="field">
+        <label>ID / Arete *</label>
+        <input type="text" id="a-id" placeholder="Ej: 042" autocomplete="off"/>
+      </div>
+      <div class="field">
+        <label>Nombre *</label>
+        <input type="text" id="a-nombre" placeholder="Ej: Canela"/>
+      </div>
+      <div class="field">
+        <label>Tipo *</label>
+        <select id="a-tipo">
+          <option value="">— Seleccionar —</option>
+          <option>Vaca</option>
+          <option>Novilla</option>
+          <option>Ternero</option>
+          <option>Toro</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Socio / Propietario</label>
+        <input type="text" id="a-socio" placeholder="Ej: Carlos Pérez"/>
+      </div>
+      <div class="field">
+        <label>Observaciones</label>
+        <textarea id="a-obs" placeholder="Color, marca, estado..."></textarea>
+      </div>
+      <br/>
+      <button class="btn btn-primary" id="btn-animal" onclick="registrarAnimal()">
+        ➕ Registrar Animal
+      </button>
+    </div>
+
+    <div class="card">
+      <h2>📋 Inventario</h2>
+      <div id="lista-animales"><div class="empty"><span>🐄</span>Sin animales registrados</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ EVENTOS ═══ -->
+  <div class="tab-content" id="tab-eventos">
+    <div class="card">
+      <h2>💉 Registrar Evento</h2>
+      <div class="field">
+        <label>ID / Arete del Animal *</label>
+        <input type="text" id="e-id" placeholder="Ej: 042" autocomplete="off"/>
+        <div class="hint" id="e-hint"></div>
+      </div>
+      <div class="field">
+        <label>Tipo de Evento *</label>
+        <select id="e-tipo">
+          <option value="">— Seleccionar —</option>
+          <option>Vacuna</option>
+          <option>Palpación</option>
+          <option>Pesaje</option>
+          <option>Tratamiento</option>
+          <option>Otro</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Observaciones</label>
+        <textarea id="e-obs" placeholder="Detalles del evento..."></textarea>
+      </div>
+      <br/>
+      <button class="btn btn-primary" id="btn-evento" onclick="registrarEvento()">
+        📝 Guardar Evento
+      </button>
+    </div>
+
+    <div class="card">
+      <h2>📅 Historial de Eventos</h2>
+      <div id="lista-eventos"><div class="empty"><span>💉</span>Sin eventos registrados</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ CONFIG ═══ -->
+  <div class="tab-content" id="tab-config">
+    <div class="alert">
+      <strong>⚠️ Configura una vez</strong><br/>
+      Sigue estos pasos para conectar la app a tu Google Sheets. Solo se hace una vez.
+    </div>
+
+    <div class="card">
+      <h2>🔧 Pasos de Configuración</h2>
+
+      <div class="config-step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>Crear Google Sheets</h3>
+          <p>Abre <strong>sheets.google.com</strong>, crea un nuevo documento y nómbralo <code>MiFinca</code>. Crea dos hojas: <code>Inventario</code> y <code>Eventos</code>.</p>
+        </div>
+      </div>
+
+      <div class="config-step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>Encabezados en Inventario</h3>
+          <p>En la hoja <strong>Inventario</strong>, escribe en la fila 1:</p>
+          <div class="code-block">A1: ID      B1: Nombre    C1: Tipo
+D1: Socio  E1: Fecha     F1: Obs</div>
+        </div>
+      </div>
+
+      <div class="config-step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>Encabezados en Eventos</h3>
+          <p>En la hoja <strong>Eventos</strong>, escribe en la fila 1:</p>
+          <div class="code-block">A1: Fecha   B1: ID    C1: Tipo
+D1: Obs</div>
+        </div>
+      </div>
+
+      <div class="config-step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h3>Abrir Apps Script</h3>
+          <p>En el Sheets, ve a <strong>Extensiones → Apps Script</strong>. Borra todo el código que aparece y pega el siguiente:</p>
+          <div class="code-block" id="apps-script-code">const SHEET_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
+
+function doPost(e) {
+  const data = JSON.parse(e.postData.contents);
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const hoja = ss.getSheetByName(data.hoja);
+  hoja.appendRow(data.fila);
+  return ContentService.createTextOutput(
+    JSON.stringify({ok: true})
+  ).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doGet(e) {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const inv = ss.getSheetByName("Inventario")
+               .getDataRange().getValues();
+  const evt = ss.getSheetByName("Eventos")
+               .getDataRange().getValues();
+  return ContentService.createTextOutput(
+    JSON.stringify({inventario: inv, eventos: evt})
+  ).setMimeType(ContentService.MimeType.JSON);
+}</div>
+          <button class="copy-btn" onclick="copiarScript()">📋 Copiar código</button>
+        </div>
+      </div>
+
+      <div class="config-step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <h3>Publicar como Web App</h3>
+          <p>En Apps Script: <strong>Implementar → Nueva implementación</strong> → tipo: <em>Aplicación web</em> → Ejecutar como: <em>Yo</em> → Quién tiene acceso: <em>Cualquier usuario</em> → <strong>Implementar</strong>.<br/><br/>Copia la <strong>URL de la aplicación web</strong> que aparece.</p>
+        </div>
+      </div>
+
+      <div class="config-step">
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <h3>Pegar URL aquí abajo</h3>
+          <p>Pega la URL en el campo de abajo y presiona Guardar.</p>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:8px">
+        <label>URL de tu Apps Script</label>
+        <input type="url" id="cfg-url" placeholder="https://script.google.com/macros/s/..."/>
+      </div>
+      <button class="btn btn-primary" onclick="guardarConfig()">💾 Guardar y conectar</button>
+    </div>
+
+    <div class="card">
+      <h2>📊 Conectar Excel (PC)</h2>
+      <p style="font-size:.88rem;line-height:1.6;color:#444;">
+        En Excel en tu PC:<br/>
+        <strong>1.</strong> <em>Datos → Obtener datos → Desde web</em><br/>
+        <strong>2.</strong> Pega la misma URL del Apps Script<br/>
+        <strong>3.</strong> Excel importará los datos como tabla<br/>
+        <strong>4.</strong> Usa <em>Actualizar todo</em> cada vez que quieras sincronizar
+      </p>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ═══ ESTADO LOCAL ═══════════════════════════════════════════════════════════
+let scriptURL = localStorage.getItem('mifinca_url') || '';
+let inventario = JSON.parse(localStorage.getItem('mifinca_inv') || '[]');
+let eventos    = JSON.parse(localStorage.getItem('mifinca_evt') || '[]');
+
+function guardarLocal() {
+  localStorage.setItem('mifinca_inv', JSON.stringify(inventario));
+  localStorage.setItem('mifinca_evt', JSON.stringify(eventos));
+}
+
+// ═══ TABS ════════════════════════════════════════════════════════════════════
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'animales') renderAnimales();
+  if (id === 'eventos')  renderEventos();
+}
+
+// ═══ STATUS BAR ══════════════════════════════════════════════════════════════
+function showStatus(msg, isError) {
+  const bar = document.getElementById('status-bar');
+  bar.textContent = msg;
+  bar.style.display = 'block';
+  bar.style.background = isError ? '#FFCDD2' : '#F9A825';
+  bar.style.color = isError ? '#B71C1C' : '#5D4037';
+  clearTimeout(bar._t);
+  bar._t = setTimeout(() => { bar.style.display = 'none'; }, 3500);
+}
+
+// ═══ CONFIG ══════════════════════════════════════════════════════════════════
+window.onload = () => {
+  if (scriptURL) {
+    document.getElementById('cfg-url').value = scriptURL;
+    document.getElementById('sync-info').textContent = '✅ Conectado a Google Sheets';
+    cargarDatos();
+  }
+  renderDashboard();
+};
+
+function guardarConfig() {
+  const url = document.getElementById('cfg-url').value.trim();
+  if (!url.startsWith('https://script.google.com')) {
+    showStatus('❌ URL inválida. Debe empezar con https://script.google.com', true);
+    return;
+  }
+  scriptURL = url;
+  localStorage.setItem('mifinca_url', url);
+  document.getElementById('sync-info').textContent = '✅ Conectado a Google Sheets';
+  showStatus('✅ Configuración guardada. Cargando datos...');
+  cargarDatos();
+}
+
+// ═══ FETCH DATOS ═════════════════════════════════════════════════════════════
+async function cargarDatos() {
+  if (!scriptURL) return;
+  try {
+    const r = await fetch(scriptURL);
+    const data = await r.json();
+    // data.inventario[0] = headers, rest = rows
+    if (data.inventario && data.inventario.length > 1) {
+      inventario = data.inventario.slice(1).map(r => ({
+        id: r[0], nombre: r[1], tipo: r[2], socio: r[3], fecha: r[4], obs: r[5]
+      }));
+    }
+    if (data.eventos && data.eventos.length > 1) {
+      eventos = data.eventos.slice(1).map(r => ({
+        fecha: r[0], id: r[1], tipo: r[2], obs: r[3]
+      }));
+    }
+    guardarLocal();
+    renderDashboard();
+    renderAnimales();
+    renderEventos();
+    showStatus('✅ Datos sincronizados desde Google Sheets');
+  } catch(e) {
+    showStatus('⚠️ No se pudo sincronizar. Usando datos locales.', true);
+  }
+}
+
+// ═══ REGISTRAR ANIMAL ════════════════════════════════════════════════════════
+async function registrarAnimal() {
+  const id     = document.getElementById('a-id').value.trim();
+  const nombre = document.getElementById('a-nombre').value.trim();
+  const tipo   = document.getElementById('a-tipo').value;
+  const socio  = document.getElementById('a-socio').value.trim();
+  const obs    = document.getElementById('a-obs').value.trim();
+
+  if (!id || !nombre || !tipo) {
+    showStatus('❌ Completa ID, Nombre y Tipo', true); return;
+  }
+  if (inventario.find(a => a.id === id)) {
+    showStatus('❌ Ya existe un animal con ese ID', true); return;
+  }
+
+  const fecha = new Date().toLocaleDateString('es-CO');
+  const animal = { id, nombre, tipo, socio, fecha, obs };
+  inventario.push(animal);
+  guardarLocal();
+
+  const btn = document.getElementById('btn-animal');
+  btn.disabled = true; btn.textContent = '⏳ Guardando...';
+
+  if (scriptURL) {
+    try {
+      await fetch(scriptURL, {
+        method: 'POST', mode: 'no-cors',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ hoja: 'Inventario', fila: [id,nombre,tipo,socio,fecha,obs] })
+      });
+      showStatus('✅ ' + nombre + ' registrado y enviado a Sheets');
+    } catch(e) {
+      showStatus('⚠️ Guardado local. Sin conexión a Sheets.', true);
+    }
+  } else {
+    showStatus('✅ ' + nombre + ' guardado localmente');
+  }
+
+  btn.disabled = false; btn.innerHTML = '➕ Registrar Animal';
+  ['a-id','a-nombre','a-socio','a-obs'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('a-tipo').value = '';
+  renderAnimales();
+}
+
+// ═══ REGISTRAR EVENTO ════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('e-id').addEventListener('input', function() {
+    const animal = inventario.find(a => a.id === this.value.trim());
+    document.getElementById('e-hint').textContent = animal
+      ? '✅ ' + animal.nombre + ' (' + animal.tipo + ')' : '';
+  });
+});
+
+async function registrarEvento() {
+  const id   = document.getElementById('e-id').value.trim();
+  const tipo = document.getElementById('e-tipo').value;
+  const obs  = document.getElementById('e-obs').value.trim();
+
+  if (!id || !tipo) { showStatus('❌ Completa ID y Tipo de evento', true); return; }
+  if (!inventario.find(a => a.id === id)) {
+    showStatus('❌ El ID no existe en el inventario', true); return;
+  }
+
+  const fecha = new Date().toLocaleDateString('es-CO');
+  const evento = { fecha, id, tipo, obs };
+  eventos.push(evento);
+  guardarLocal();
+
+  const btn = document.getElementById('btn-evento');
+  btn.disabled = true; btn.textContent = '⏳ Guardando...';
+
+  if (scriptURL) {
+    try {
+      await fetch(scriptURL, {
+        method: 'POST', mode: 'no-cors',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ hoja: 'Eventos', fila: [fecha, id, tipo, obs] })
+      });
+      showStatus('✅ Evento guardado y enviado a Sheets');
+    } catch(e) {
+      showStatus('⚠️ Guardado local. Sin conexión a Sheets.', true);
+    }
+  } else {
+    showStatus('✅ Evento guardado localmente');
+  }
+
+  btn.disabled = false; btn.innerHTML = '📝 Guardar Evento';
+  ['e-id','e-obs'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('e-tipo').value = '';
+  document.getElementById('e-hint').textContent = '';
+  renderEventos();
+}
+
+// ═══ RENDER DASHBOARD ════════════════════════════════════════════════════════
+function renderDashboard() {
+  document.getElementById('st-total').textContent    = inventario.length;
+  document.getElementById('st-eventos').textContent  = eventos.length;
+  document.getElementById('st-vacas').textContent    = inventario.filter(a=>a.tipo==='Vaca').length;
+  document.getElementById('st-terneros').textContent = inventario.filter(a=>a.tipo==='Ternero').length;
+
+  const recientes = [...inventario].slice(-5).reverse();
+  const div = document.getElementById('recientes');
+  if (!recientes.length) { div.innerHTML = '<div class="empty"><span>🌿</span>Sin datos aún</div>'; return; }
+  div.innerHTML = recientes.map(a => `
+    <div class="list-item">
+      <div class="list-icon">${tipoEmoji(a.tipo)}</div>
+      <div class="list-info">
+        <strong>${a.nombre}</strong>
+        <span>Arete: ${a.id} · ${a.fecha}</span>
+      </div>
+      <span class="list-badge">${a.tipo}</span>
+    </div>`).join('');
+}
+
+// ═══ RENDER ANIMALES ═════════════════════════════════════════════════════════
+function renderAnimales() {
+  const div = document.getElementById('lista-animales');
+  if (!inventario.length) { div.innerHTML = '<div class="empty"><span>🐄</span>Sin animales registrados</div>'; return; }
+  div.innerHTML = [...inventario].reverse().map(a => `
+    <div class="list-item">
+      <div class="list-icon">${tipoEmoji(a.tipo)}</div>
+      <div class="list-info">
+        <strong>${a.nombre}</strong>
+        <span>${a.socio ? a.socio + ' · ' : ''}Arete: ${a.id}</span>
+      </div>
+      <span class="list-badge">${a.tipo}</span>
+    </div>`).join('');
+}
+
+// ═══ RENDER EVENTOS ══════════════════════════════════════════════════════════
+function renderEventos() {
+  const div = document.getElementById('lista-eventos');
+  if (!eventos.length) { div.innerHTML = '<div class="empty"><span>💉</span>Sin eventos registrados</div>'; return; }
+  div.innerHTML = [...eventos].reverse().map(e => {
+    const animal = inventario.find(a => a.id === e.id);
+    return `
+    <div class="list-item">
+      <div class="list-icon">${eventoEmoji(e.tipo)}</div>
+      <div class="list-info">
+        <strong>${e.tipo}${animal ? ' — ' + animal.nombre : ''}</strong>
+        <span>Arete: ${e.id} · ${e.fecha}${e.obs ? ' · ' + e.obs : ''}</span>
+      </div>
+      <span class="list-badge evt">${e.tipo}</span>
+    </div>`;
+  }).join('');
+}
+
+// ═══ HELPERS ═════════════════════════════════════════════════════════════════
+function tipoEmoji(t) {
+  return {Vaca:'🐄',Toro:'🐂',Novilla:'🐮',Ternero:'🐃'}[t] || '🐄';
+}
+function eventoEmoji(t) {
+  return {Vacuna:'💉',Palpación:'🩺',Pesaje:'⚖️',Tratamiento:'💊',Otro:'📋'}[t] || '📋';
+}
+
+function copiarScript() {
+  const code = document.getElementById('apps-script-code').textContent;
+  navigator.clipboard.writeText(code).then(() => showStatus('✅ Código copiado al portapapeles'));
+}
+</script>
+</body>
+</html>
